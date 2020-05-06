@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Adam Waring" />
+
+<meta name="date" content="2020-05-06" />
+
+<title>Statistical tests ClusterBurden</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Statistical tests ClusterBurden</h1>
+<h4 class="author">Adam Waring</h4>
+<h4 class="date">2020-05-06</h4>
+
+
+
+<div id="quick-overview" class="section level2">
+<h2>Quick overview</h2>
+<ul>
+<li>BIN-test (for positional/clustering signals) splits a genes into k bins (default: k = n^(2/5) where n = total number of variants). A contingency table is constructed for the counts in each k bin over the two cohorts. A chi-squared two-sample test is conducted on this table. If coverage information is supplied then this is controlled for by adjutsing bin counts.</li>
+<li>Fisher’s-exact test is a generic burden test. Here is coverage is provided, sample sizes are adjusted for based on this.</li>
+<li>ClusterBurden combines the p-values from the BIN-test and a Fisher’s exact test using Fisher’s method.</li>
+</ul>
+</div>
+<div id="bin-test" class="section level2">
+<h2>BIN-test</h2>
+<p>First we need to generate some simulated data. Here ‘nresidues’ denotes the length of a protein and the probability of observing a residue at any given residue is given by an exponential distribution (note: this produces a site-frequency spectrum comparable to real data, using a uniform distribution would result in an excess of singleton variants).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"> <span class="kw">library</span>(ClusterBurden)</a>
+<a class="sourceLine" id="cb1-2" title="2"> nresidues =<span class="st"> </span><span class="dv">1000</span> </a>
+<a class="sourceLine" id="cb1-3" title="3"> probs =<span class="st"> </span><span class="kw">rexp</span>(nresidues)<span class="op">^</span><span class="dv">2</span> </a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5"> case_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, probs)</a>
+<a class="sourceLine" id="cb1-6" title="6"> control_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, probs)</a></code></pre></div>
+<p>The BIN-test can then be used to assess differences in variant positions between the two cohorts. Without any additional arguments this will simply return a p-value.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">BIN_test</span>(case_residues, control_residues)</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="co">#&gt; Warning in inspect_residues(case_residues, &quot;cases&quot;): There are some outliers</span></a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="co">#&gt; in the frequency some cases_residues are observed. (residues = 854; ac = 7).</span></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co">#&gt; Be careful as these variants may be founders, from related samples or common</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="co">#&gt; ancestry-specific variants (that have evaded frequency filtering). Such variants</span></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co">#&gt; may cause artefactual clusters.</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co">#&gt; [1] 0.5055456</span></a></code></pre></div>
+<p>As the cases and controls were simulated from the same probability distribution (probs) the result will probably not be significant.</p>
+<p>Now we simulate a disease gene. The region is split into three bins of length 200, 200 and 600. For cases the probabilities of simulating variants in the second bin (200-400) are multiplied by 3, for controls the probabilities are multipled by 0.5. This will increase the number of case variants here (i.e. make a case cluster) and decrease the number of control variants (i.e. make a constrained region). Plotting the distributions show that this is the case.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"> case_probs =<span class="st"> </span>probs <span class="op">*</span><span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span>), <span class="kw">c</span>(<span class="dv">200</span>, <span class="dv">200</span>, <span class="dv">600</span>))</a>
+<a class="sourceLine" id="cb3-2" title="2"> control_probs =<span class="st"> </span>probs <span class="op">*</span><span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">1</span>), <span class="kw">c</span>(<span class="dv">200</span>, <span class="dv">200</span>, <span class="dv">600</span>))</a>
+<a class="sourceLine" id="cb3-3" title="3"></a>
+<a class="sourceLine" id="cb3-4" title="4"> case_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, case_probs)</a>
+<a class="sourceLine" id="cb3-5" title="5"> control_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, control_probs)</a>
+<a class="sourceLine" id="cb3-6" title="6"></a>
+<a class="sourceLine" id="cb3-7" title="7"> <span class="kw">plot_distribs</span>(case_residues, control_residues)</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>The BIN-test is now expected to be significant.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">BIN_test</span>(case_residues, control_residues)</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="co">#&gt; Warning in inspect_residues(control_residues, &quot;controls&quot;): There are some</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="co">#&gt; outliers in the frequency some controls_residues are observed. (residues = 854;</span></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="co">#&gt; ac = 7). Be careful as these variants may be founders, from related samples or</span></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="co">#&gt; common ancestry-specific variants (that have evaded frequency filtering). Such</span></a>
+<a class="sourceLine" id="cb4-6" title="6"><span class="co">#&gt; variants may cause artefactual clusters.</span></a>
+<a class="sourceLine" id="cb4-7" title="7"><span class="co">#&gt; [1] 0.004016331</span></a></code></pre></div>
+<p>As differences in coverage could manifest in differences in variant distributions this can be controlled for by providing coverage files. Here we will simulate a region with no coverage in cases (1-200) and a region of low coverage in controls (800-1000).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">  case_coverage =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="kw">c</span>(<span class="dv">200</span>, <span class="dv">800</span>))</a>
+<a class="sourceLine" id="cb5-2" title="2">  control_coverage =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.8</span>), <span class="kw">c</span>(<span class="dv">800</span>, <span class="dv">200</span>))</a>
+<a class="sourceLine" id="cb5-3" title="3"></a>
+<a class="sourceLine" id="cb5-4" title="4">  case_probs =<span class="st"> </span>probs <span class="op">*</span><span class="st"> </span>case_coverage</a>
+<a class="sourceLine" id="cb5-5" title="5">  control_probs =<span class="st"> </span>probs <span class="op">*</span><span class="st"> </span>control_coverage</a>
+<a class="sourceLine" id="cb5-6" title="6">  </a>
+<a class="sourceLine" id="cb5-7" title="7">  case_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, case_probs)</a>
+<a class="sourceLine" id="cb5-8" title="8">  control_residues =<span class="st"> </span><span class="kw">sample</span>(<span class="dv">1</span><span class="op">:</span>nresidues, <span class="dv">100</span>, <span class="dt">rep=</span>T, control_probs)</a>
+<a class="sourceLine" id="cb5-9" title="9">  </a>
+<a class="sourceLine" id="cb5-10" title="10">  <span class="kw">BIN_test</span>(case_residues, control_residues)</a>
+<a class="sourceLine" id="cb5-11" title="11"><span class="co">#&gt; Warning in inspect_residues(control_residues, &quot;controls&quot;): There are some</span></a>
+<a class="sourceLine" id="cb5-12" title="12"><span class="co">#&gt; outliers in the frequency some controls_residues are observed. (residues = 239;</span></a>
+<a class="sourceLine" id="cb5-13" title="13"><span class="co">#&gt; ac = 6). Be careful as these variants may be founders, from related samples or</span></a>
+<a class="sourceLine" id="cb5-14" title="14"><span class="co">#&gt; common ancestry-specific variants (that have evaded frequency filtering). Such</span></a>
+<a class="sourceLine" id="cb5-15" title="15"><span class="co">#&gt; variants may cause artefactual clusters.</span></a>
+<a class="sourceLine" id="cb5-16" title="16"><span class="co">#&gt; Warning in chisq.test(contig): Chi-squared approximation may be incorrect</span></a>
+<a class="sourceLine" id="cb5-17" title="17"><span class="co">#&gt; [1] 0.0006341723</span></a></code></pre></div>
+<p>A coverage file detailing these issues should adjust for this coverage difference. To adjust for coverage the coverage file must contain two columns named: protein_position and over_10. The first is the residue index in the linear protein position. The second is the proportion of samples with at least 10X coverage.</p>
+<p>Note: If your file contains coverage at a per base level (highly likely) it can be mapped to canonical ensembl transcripts and residues positions using ClusterBurden::genome_to_residue().</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">  case_coverage =<span class="st"> </span><span class="kw">data.table</span>(<span class="dt">protein_position=</span><span class="dv">1</span><span class="op">:</span>nresidues, <span class="dt">over_10=</span>case_coverage)</a>
+<a class="sourceLine" id="cb6-2" title="2">  control_coverage =<span class="st"> </span><span class="kw">data.table</span>(<span class="dt">protein_position=</span><span class="dv">1</span><span class="op">:</span>nresidues, <span class="dt">over_10=</span>control_coverage)</a>
+<a class="sourceLine" id="cb6-3" title="3">  </a>
+<a class="sourceLine" id="cb6-4" title="4">  <span class="kw">BIN_test</span>(case_residues, control_residues, case_coverage, control_coverage)</a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="co">#&gt; Some regions ignored due to low coverage in cases (threshold = 0.5, residues = 1-200)</span></a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="co">#&gt; Removed 20 control variants in region blacklisted by case coverage</span></a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="co">#&gt; Warning in inspect_residues(control_residues, &quot;controls&quot;): There are some</span></a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="co">#&gt; outliers in the frequency some controls_residues are observed. (residues = 239;</span></a>
+<a class="sourceLine" id="cb6-9" title="9"><span class="co">#&gt; ac = 6). Be careful as these variants may be founders, from related samples or</span></a>
+<a class="sourceLine" id="cb6-10" title="10"><span class="co">#&gt; common ancestry-specific variants (that have evaded frequency filtering). Such</span></a>
+<a class="sourceLine" id="cb6-11" title="11"><span class="co">#&gt; variants may cause artefactual clusters.</span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="co">#&gt; [1] 0.4142525</span></a></code></pre></div>
+</div>
+<div id="burden-test-and-clusterburden" class="section level2">
+<h2>Burden test and ClusterBurden</h2>
+<p>The function ClusterBurden::burden_test() can be used which calculate the p-value for a Fisher’s-exact test. Inputs to this function are the counts for each cohort (after filtering) and the sample sizes for each cohort. If coverage information is provided sample sizes for each cohort are adjusted by the proportion of samples with 10X coverage over the region of interest (i.e. protein coding region).</p>
+<p>To calculate the ClusterBurden p-value, the p-values from the BIN-test and the burden test are combined using Fisher’s method in function ClusterBurden::combine_ps(). This is only possible as the BIN-test does not use include any information on the samples sizes and is therefore uncorrelated with the burden test under the null. If either p-value is zero then the output from Fisher’s method is undefined therefore instead of returning NA, zero is returned, suggesting a p-value so low it is rounded to zero.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"></a>
+<a class="sourceLine" id="cb7-2" title="2">  binpval =<span class="st"> </span><span class="kw">BIN_test</span>(case_residues, control_residues, case_coverage, control_coverage)</a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="co">#&gt; Some regions ignored due to low coverage in cases (threshold = 0.5, residues = 1-200)</span></a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="co">#&gt; Removed 20 control variants in region blacklisted by case coverage</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="co">#&gt; Warning in inspect_residues(control_residues, &quot;controls&quot;): There are some</span></a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="co">#&gt; outliers in the frequency some controls_residues are observed. (residues = 239;</span></a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="co">#&gt; ac = 6). Be careful as these variants may be founders, from related samples or</span></a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="co">#&gt; common ancestry-specific variants (that have evaded frequency filtering). Such</span></a>
+<a class="sourceLine" id="cb7-9" title="9"><span class="co">#&gt; variants may cause artefactual clusters.</span></a>
+<a class="sourceLine" id="cb7-10" title="10">  burdp =<span class="st"> </span><span class="kw">burden_test</span>(<span class="dt">n1 =</span> <span class="dv">80</span>, <span class="dt">n2 =</span> <span class="dv">40</span>, <span class="dt">ss1 =</span> <span class="dv">1000</span>, <span class="dt">ss2 =</span> <span class="dv">1000</span>) <span class="co"># 2X excess in cases</span></a>
+<a class="sourceLine" id="cb7-11" title="11">  </a>
+<a class="sourceLine" id="cb7-12" title="12">  <span class="kw">combine_ps</span>(burdp, binpval)</a>
+<a class="sourceLine" id="cb7-13" title="13"><span class="co">#&gt; [1] 0.0004896168</span></a></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

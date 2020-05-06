@@ -1,0 +1,136 @@
+---
+title: "Whole-exome scans with ClusterBurden"
+author: "Adam Waring"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Whole-exome scans with ClusterBurden}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=7
+)
+```
+
+## Automatic GnomAD controls and example cases 
+
+To search for clustering and burden signals across multiple genes, vectorised versions of the BIN_test(), burden_test() and combined_test() functions are available; BIN_test_WES(), burden_test_WES() and ClusterBurden_WES(). 
+
+Controls can be generated automatically using the function collect_gnomad_controls() which will also generate the coverage file for the chosen cohort i.e. exomes or genomes (v2). 
+
+The parameters to collect_gnomad_controls() include; 
+
+  * "genenames"; the genes to include, NULL = all genes, numeric = random sample of size "genenames". 
+  * "dataset"; either "exome" or "genome"
+  * "inframes", "max_inframe_size"; whether to include inframe indels as missense and up to what size.
+  * "filtertype", "maxmaf";  MAF filtering type can be one of 'global' (frequency in GnomAD exomes dataset), 'popmax' (maximum ancestry frequency in GnomAD exomes (excl. FIN, ASJ, OTH)) or 'strict' (maximum ancestry frequency in any GnomAD exomes group as well as the global frequency of GnomAD genomes).
+  * "switch_dataset_threshold"; switch dataset for a gene (i.e. 'exome' or 'genome') if chosen dataset mean 10X coverage across region is below this threshold. E.g. 'exome' is selected using "dataset" and "switch_dataset_threshold" is set to 0.9; for each gene if the mean 10X coverage is less than 90% then the control group will be switched to GnomAD genomes (if the coverage is better). However, dataset size exomes n=125,748 and genomes=15,708.
+  
+For example purposes, there is a further function collect_example_cases() which will make an example cases with disease-genes from ClinVAR (defined by "clndn_regex") and null genes from GnomAD exomes or genoems dependent on what was used for the control group. 
+
+Below;
+
+1. a small gene set for analysis is defined by cardiomyopathy disease genes and an additional 200 random 'null' genes 
+2. A control group is made with the default dataset GnomAD exomes (dataset="exome"), missense variants including inframes up to 3 residues (inframes=T, max_inframe_size=3) and MAF filtering is done based on a strict popmax threshold of 0.1% (filtertype="strict", maxmaf=0.0001). 
+3. A case group is made using the same geneset, the same filtering options (defaults) and will automatically select GnomAD genomes for the null genes (ClinVAR-based data for the disease genes).
+
+```{r}
+library(ClusterBurden)
+
+n_random_genes = 200
+disease = "cardiomyopathy"
+
+genes = find_genes(n_random_genes, disease)
+
+controls = collect_gnomad_controls(genenames=genes)
+
+# control dataset
+summary(controls)
+
+cases = collect_example_cases(controls, disease)
+
+# case dataset
+summary(cases)
+
+# disease genes
+paste(cases[group=="cln", unique(symbol)], collapse=", ")
+
+```
+
+## Formatting real data 
+
+Of course in practice, at least the case dataset would be supplied by the user. This should be filtered in the same manner as the control dataset supplied by the user of collect_gnomad_controls(). The dataset must contain the columns aff (1=cases, 0=controls), symbol (HGNC genename), protein_position (variant residue index) and ac (allele count for variant).
+
+Notes on using real data 
+
+* Only canonical transcripts are available in the collect_gnomad_controls() therefore check data("canon_txs").
+If the real data is not already annotated with GnomAD frequencies for filtering it can be with the function annotate_gnomad_freqs(). In order for this to be possible it must have the columns (chrom, pos, ref, alt) or the the transcript consequence column in HGVSc format (i.e. c.876A>T or c.A876T). 
+* Variant consequence must be available to filter for missense and inframe variants. In order to filter on inframe-size ref and alt columns must be available. Inframe size can then be calculated using something like; x[,inframe_size := mapply(function(x, y) max(nchar(x)%/%3, nchar(y)%/%3), ref, alt)]
+* If protein position is not directly available then HGVSp consequence can be formatted using get_residue_position() to extract the affected residue index using regular expressions. 
+* When using automatically generated datasets supplying coverage is not necessary as these are attached to the returned dataset as attributes and are automatically used in any subsequent functions. 
+
+
+## Calculating p-values 
+
+Once the datasets are filtered and in the correct format. Calculating p-values across all genes is as simple as;
+
+```{r}
+pvals = ClusterBurden_WES(cases, controls, covstats = T)
+# BIN_test_WES can calculate only clustering p-values
+# burden_WES can be used for only burden p-values 
+# covstats=T provides more coverage details for each gene including the protein ranges excluded from the analysis
+# Coverage data is automatically supplied with cases and controls generated by the collect_* functions
+
+# "pvals" output 
+head(pvals[order(ClusterBurden)])
+
+```
+Default output includes flags that may indicate potential confounders included coverage and protein length. These may represent alternative explanations to significant results other an association with affection status.
+
+pl_flag (PL = protein length):
+
+* Moderate = PL > 1000
+* High = PL > 2000
+* Very high = PL > 3000
+
+cov_flag1 (mcov = Mean coverage over region):
+
+* Moderate = mcov < 80%
+* High = mcov < 70%
+* Very high = mcov < 60%
+
+cov_flag2 (covbins = Proportion of bins with less than 80% coverage):
+
+* Moderate = covbins > 10%
+* High = covbins > 30%
+* Very high = covbins > 50%
+
+## Visualising results
+
+ClusterBurden contains a few functions for plotting the results from this analysis. For example manhattan() plots a simple manhattan plot that takes the pvals object two additional arguments; "test" which represents the test for which to plot p-values ('BIN.test_pvalue', 'burden_pvalue' or 'ClusterBurden') and "n_genes" which represents how many of the most significant genes to display gene symbols for. The "SCALE" argument just helps improve visualisation for smaller outputs e.g. to make it look good in Rmarkdown it needs to be scaled down. 
+
+```{r}
+manhattan(pvals, "BIN-test", n_genes=10, SCALE=0.5)
+manhattan(pvals, "ClusterBurden", n_genes=10, SCALE=0.5)
+```
+
+The function plot_signif_distribs() can display distributions of variant positions and coverage in the "n_genes" most significant genes.
+
+```{r fig.height=6}
+plot_signif_distribs(pvals, cases, controls, n_genes = 9, SCALE=0.5, test="BIN-test")
+```
+
+To further investigate a clustering signal of interest the variants can be plotted against sequence features from uniprot.
+
+```{r fig.height=7}
+# Top clustering signals 
+pvals[order(BIN.test_pvalue)][,.(symbol, BIN.test_pvalue, pl_flag, cov_flag1, cov_flag2)][1:5]
+
+# Choose a gene to investigate further
+plot_features("MYH7", pvals, cases, controls, SCALE=0.7)
+```

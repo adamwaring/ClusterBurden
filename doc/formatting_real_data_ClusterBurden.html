@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Adam Waring" />
+
+<meta name="date" content="2020-05-06" />
+
+<title>Formatting real data: ClusterBurden</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Formatting real data: ClusterBurden</h1>
+<h4 class="author">Adam Waring</h4>
+<h4 class="date">2020-05-06</h4>
+
+
+
+<div id="format-required-for-case-control-data" class="section level1">
+<h1>Format required for case-control data</h1>
+<p>As a minimum, the case-control data should be a data.table with the columns:</p>
+<ul>
+<li>aff (where 1 = cases and 0 = controls)</li>
+<li>symbol (the HGNC gene symbol)</li>
+<li>protein_position (the variant residue index in the linear protein sequence)</li>
+<li>ac (the allele count for that variant)</li>
+</ul>
+<p>However more columns are necessary to filter the data on variant consequence and frequency. This method is designed for missense variants so the dataset should only include this variant type. The defaults used here include inframe indels up to 3 residues in size in the definition of missense. To filter on frequency I recommended using a strict popmax filter at the threshold 0.1% (i.e. 0.0001).</p>
+<div id="annotating-with-gnomad-frequencies-for-frequency-filtering" class="section level2">
+<h2>Annotating with GnomAD frequencies for frequency filtering</h2>
+<p>If the dataset is not already annotated with GnomAD frequencies it can be here with the function; annotate_with_gnomad_freqs(). The dataset must contain matching ensembl transcripts to the GnomAD datasets here. Either the columns chr, pos, ref, alt or txconsq must be available, where chr = chromosome name, pos = genome position, ref = the reference base(s) and alt = the alternative base(s), and txconsq is the transcript consequence in HGVSc format i.e. c.76A&gt;T.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(ClusterBurden)</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3">x =<span class="st"> </span><span class="kw">annotate_with_gnomad_freqs</span>(<span class="dt">dataset =</span> <span class="kw">data.table</span>(<span class="dt">symbol=</span><span class="st">&quot;MYH7&quot;</span>, <span class="dt">chr=</span><span class="st">&quot;14&quot;</span>, <span class="dt">pos=</span><span class="dv">23882985</span>, <span class="dt">ref=</span><span class="st">&quot;G&quot;</span>, <span class="dt">alt=</span><span class="st">&quot;A&quot;</span>))</a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">print</span>(x)</a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="co">#&gt;    chr      pos ref alt symbol      global      popmax      strict af_g2</span></a>
+<a class="sourceLine" id="cb1-6" title="6"><span class="co">#&gt; 1:  14 23882985   G   A   MYH7 3.97883e-06 8.80173e-06 8.80173e-06     0</span></a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8">x =<span class="st"> </span><span class="kw">annotate_with_gnomad_freqs</span>(<span class="dt">dataset =</span> <span class="kw">data.table</span>(<span class="dt">symbol=</span><span class="st">&quot;MYH7&quot;</span>, <span class="dt">txconsq=</span><span class="st">&quot;c.5704G&gt;C&quot;</span>))</a>
+<a class="sourceLine" id="cb1-9" title="9"><span class="kw">print</span>(x)</a>
+<a class="sourceLine" id="cb1-10" title="10"><span class="co">#&gt;       txconsq symbol      global      popmax      strict       af_g2</span></a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="co">#&gt;  1: c.5704G&gt;C   MYH7 5.70757e-06 4.74113e-05 4.74113e-05 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-12" title="12"><span class="co">#&gt;  2: c.5704G&gt;C   MYH7 1.59077e-05 3.51710e-05 3.51710e-05 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-13" title="13"><span class="co">#&gt;  3: c.5704G&gt;C   MYH7 1.03386e-04 1.41350e-03 1.41350e-03 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-14" title="14"><span class="co">#&gt;  4: c.5704G&gt;C   MYH7 1.31895e-05 2.95369e-05 2.95369e-05 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="co">#&gt;  5: c.5704G&gt;C   MYH7 0.00000e+00 0.00000e+00 0.00000e+00 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-16" title="16"><span class="co">#&gt;  6: c.5704G&gt;C   MYH7 4.00109e-06 8.83299e-06 8.83299e-06 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-17" title="17"><span class="co">#&gt;  7: c.5704G&gt;C   MYH7 7.95589e-06 1.08731e-04 1.08731e-04 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-18" title="18"><span class="co">#&gt;  8: c.5704G&gt;C   MYH7 4.03041e-06 8.88699e-06 8.88699e-06 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="co">#&gt;  9: c.5704G&gt;C   MYH7 2.00781e-05 4.43176e-05 4.43176e-05 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-20" title="20"><span class="co">#&gt; 10: c.5704G&gt;C   MYH7 4.53840e-06 7.71010e-05 7.71010e-05 6.36983e-05</span></a>
+<a class="sourceLine" id="cb1-21" title="21"><span class="co">#&gt; 11: c.5704G&gt;C   MYH7 1.99427e-05 8.68961e-05 8.68961e-05 6.36983e-05</span></a></code></pre></div>
+</div>
+<div id="extracting-protein-position-from-hgvsp-format" class="section level2">
+<h2>Extracting protein position from HGVSp format</h2>
+<p>If the protein position is not directly available but the protein consequence is in HGVSp e.g. p.R502W then the protein position can be extracted using regular expressions.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">get_residue_position</span>(<span class="st">&quot;p.R502W&quot;</span>)</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="co">#&gt; [1] 502</span></a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4">x =<span class="st"> </span><span class="kw">data.table</span>(<span class="dt">pconsq =</span> <span class="kw">c</span>(<span class="st">&quot;p.Leu1903Leu&quot;</span>, <span class="st">&quot;p.Lys1173_Ala1174delinsThr&quot;</span>))</a>
+<a class="sourceLine" id="cb2-5" title="5">x[,protein_position <span class="op">:</span><span class="er">=</span><span class="st"> </span><span class="kw">get_residue_position</span>(pconsq)]</a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co">#&gt; Warning in get_residue_position(pconsq): Multiple possible positions found in 2</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co">#&gt; (p.Lys1173_Ala1174delinsThr). Taking first matches: 1173.</span></a>
+<a class="sourceLine" id="cb2-8" title="8">x</a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="co">#&gt;                        pconsq protein_position</span></a>
+<a class="sourceLine" id="cb2-10" title="10"><span class="co">#&gt; 1:               p.Leu1903Leu             1903</span></a>
+<a class="sourceLine" id="cb2-11" title="11"><span class="co">#&gt; 2: p.Lys1173_Ala1174delinsThr             1173</span></a></code></pre></div>
+</div>
+<div id="inframes-size" class="section level2">
+<h2>Inframes size</h2>
+<p>Calculating an inframe indels size is possible using the ref and alt columns.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">x =<span class="st"> </span><span class="kw">data.table</span>(<span class="dt">ref =</span> <span class="kw">c</span>(<span class="st">&quot;AGGATGG&quot;</span>, <span class="st">&quot;G&quot;</span>), <span class="dt">alt =</span> <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;GCACACA&quot;</span>))</a>
+<a class="sourceLine" id="cb3-2" title="2"></a>
+<a class="sourceLine" id="cb3-3" title="3">x[,n_res<span class="op">:</span><span class="er">=</span><span class="kw">mapply</span>(<span class="cf">function</span>(x, y) <span class="kw">max</span>(<span class="kw">nchar</span>(x)<span class="op">%/%</span><span class="dv">3</span>, <span class="kw">nchar</span>(y)<span class="op">%/%</span><span class="dv">3</span>), ref, alt)]</a>
+<a class="sourceLine" id="cb3-4" title="4">x</a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="co">#&gt;        ref     alt n_res</span></a>
+<a class="sourceLine" id="cb3-6" title="6"><span class="co">#&gt; 1: AGGATGG       A     2</span></a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="co">#&gt; 2:       G GCACACA     2</span></a></code></pre></div>
+</div>
+</div>
+<div id="formatting-coverage" class="section level1">
+<h1>Formatting coverage</h1>
+<p>Coverage files need to be data.tables with the columns;</p>
+<ul>
+<li>symbol (the HGNC gene symbol)</li>
+<li>protein_position (the variant residue index in the linear protein sequence)</li>
+<li>over_10 (the proportion of samples with at least 10X coverage over the residue - i.e. a mean across all bases)</li>
+</ul>
+<p>As most coverage files are supplied at the base level with genomic coordinates, I have developed a function here to convert this format to the format required; format_coverage(). This function requires only one argument, a data.table with columns: chr, pos and over_10.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">x =<span class="st"> </span><span class="kw">data.table</span>(<span class="dt">chr =</span> <span class="st">&quot;14&quot;</span>, <span class="dt">pos =</span> <span class="dv">23882071</span><span class="op">:</span><span class="dv">23882081</span>, <span class="dt">over_10=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb4-2" title="2"></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="kw">format_coverage</span>(x)</a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="co">#&gt;    symbol index over_10</span></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="co">#&gt; 1:   MYH7  1934       1</span></a>
+<a class="sourceLine" id="cb4-6" title="6"><span class="co">#&gt; 2:   MYH7  1933       1</span></a>
+<a class="sourceLine" id="cb4-7" title="7"><span class="co">#&gt; 3:   MYH7  1932       1</span></a>
+<a class="sourceLine" id="cb4-8" title="8"><span class="co">#&gt; 4:   MYH7  1931       1</span></a></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

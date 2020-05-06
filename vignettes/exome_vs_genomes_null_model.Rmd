@@ -1,0 +1,127 @@
+---
+title: "GnomAD exomes vs genomes: ClusterBurden 'null' model"
+author: "Adam Waring"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GnomAD exomes vs genomes: ClusterBurden 'null' model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=7
+)
+```
+
+
+# BIN-test no coverage control  
+
+1. Generate GnomAD exomes 'controls'
+2. Generate GnomAD genomes 'cases'
+3. Switch affection status to GnomAD genomes 'cases' to 1 (aff=1)
+4. Remove switch to turn on automatic coverage 
+5. Calculate BIN-test p-values with no coverage control
+
+```{r}
+library(ClusterBurden)
+
+controls = collect_gnomad_controls(dataset="exome")
+cases = collect_gnomad_controls(dataset="genome")
+cases[,aff:=1]
+
+attributes(controls)$provenance = attributes(cases)$provenance = NULL
+
+binpval = BIN_test_WES(cases, controls)
+
+head(binpval)
+
+
+```
+
+## Proportion of significant results 
+
+```{r}
+# nominal significance 
+binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
+
+# Bonferonni significance 
+binpval[,sum(BIN.test_pvalue < 0.05/.N)/.N]
+```
+
+## Lambda (inflation)
+
+```{r}
+# function to generate lambda inflation metric
+lambda = function(p) median(qchisq(p, df=1, lower.tail=FALSE)) / qchisq(0.5, 1)
+
+# lambda across all non-NA p-values
+lambda(binpval[!is.na(BIN.test_pvalue), BIN.test_pvalue])
+
+# lambda across p-values not in giant proteins i.e. > 2000 residues
+lambda(binpval[!is.na(BIN.test_pvalue) & !grepl("high", pl_flag), BIN.test_pvalue])
+```
+
+## Manhattan plot
+
+```{r}
+manhattan(binpval, "bin-test", 10, SCALE=0.5)
+```
+
+# BIN-test with coverage control
+
+1. Turn back on the switch for automatic coverage control
+5. Calculate BIN-test p-values with automatic coverage control
+
+```{r}
+attributes(controls)$provenance = attributes(cases)$provenance = "auto"
+
+binpval = BIN_test_WES(cases, controls)
+
+binpval
+```
+
+## Significant results 
+
+It is clear that coverage differences was the main driver of significant results. Lambda is now reduced to become below 1 however nominally significant results do exceed 5%. The manhattan plot reveals some Bonferonni significant results indicating either some uncontrolled for confounders (e.g. ancestry) or true differences between the exomes and genomes cohorts (unlikely but not impossible). 
+
+```{r}
+# nominal significance 
+binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
+
+# Bonferonni significance 
+binpval[,sum(BIN.test_pvalue < 0.05/.N, na.rm=T)/.N]
+
+# function to generate lambda inflation metric
+lambda = function(p) median(qchisq(p, df=1, lower.tail=FALSE)) / qchisq(0.5, 1)
+
+# lambda across all non-NA p-values
+lambda(binpval[!is.na(BIN.test_pvalue), BIN.test_pvalue])
+
+# manhattan
+manhattan(binpval, "bin-test", 10, SCALE=0.5)
+```
+
+Alongside the p-values there are flags to alert the user to potential confounders including pl_flag for protein length and cov_flag1 and cov_flag2 for coverage. After removing genes with coverage concern level flagged as high (or very high) the same calculations are made.
+
+```{r}
+binpval = binpval[!grepl("high", cov_flag1) & !grepl("high", cov_flag2) & !grepl("high", pl_flag)]
+
+# nominal significance 
+binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
+
+# Bonferonni significance 
+binpval[,sum(BIN.test_pvalue < 0.05/.N, na.rm=T)/.N]
+
+# function to generate lambda inflation metric
+lambda = function(p) median(qchisq(p, df=1, lower.tail=FALSE)) / qchisq(0.5, 1)
+
+# lambda across all non-NA p-values
+lambda(binpval[!is.na(BIN.test_pvalue), BIN.test_pvalue])
+
+# manhattan
+manhattan(binpval, "bin-test", 10, SCALE=0.5)
+```

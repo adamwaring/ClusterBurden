@@ -1,0 +1,107 @@
+---
+title: "Statistical tests ClusterBurden"
+author: "Adam Waring"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Statistical tests ClusterBurden}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=7
+)
+```
+
+
+## Quick overview
+
+* BIN-test (for positional/clustering signals) splits a genes into k bins (default: k = n^(2/5) where n = total number of variants). A contingency table is constructed for the counts in each k bin over the two cohorts. A chi-squared two-sample test is conducted on this table. If coverage information is supplied then this is controlled for by adjutsing bin counts.
+* Fisher's-exact test is a generic burden test. Here is coverage is provided, sample sizes are adjusted for based on this. 
+* ClusterBurden combines the p-values from the BIN-test and a Fisher's exact test using Fisher's method. 
+
+
+## BIN-test
+
+First we need to generate some simulated data. Here 'nresidues' denotes the length of a protein and the probability of observing a residue at any given residue is given by an exponential distribution (note: this produces a site-frequency spectrum comparable to real data, using a uniform distribution would result in an excess of singleton variants). 
+
+```{r}
+ library(ClusterBurden)
+ nresidues = 1000 
+ probs = rexp(nresidues)^2 
+
+ case_residues = sample(1:nresidues, 100, rep=T, probs)
+ control_residues = sample(1:nresidues, 100, rep=T, probs)
+```
+
+The BIN-test can then be used to assess differences in variant positions between the two cohorts. Without any additional arguments this will simply return a p-value.
+
+```{r} 
+BIN_test(case_residues, control_residues)
+```
+
+As the cases and controls were simulated from the same probability distribution (probs) the result will probably not be significant. 
+
+Now we simulate a disease gene. The region is split into three bins of length 200, 200 and 600. For cases the probabilities of simulating variants in the second bin (200-400) are multiplied by 3, for controls the probabilities are multipled by 0.5. This will increase the number of case variants here (i.e. make a case cluster) and decrease the number of control variants (i.e. make a constrained region). Plotting the distributions show that this is the case.
+
+```{r }
+ case_probs = probs * rep(c(1, 3, 1), c(200, 200, 600))
+ control_probs = probs * rep(c(1, 0.5, 1), c(200, 200, 600))
+
+ case_residues = sample(1:nresidues, 100, rep=T, case_probs)
+ control_residues = sample(1:nresidues, 100, rep=T, control_probs)
+
+ plot_distribs(case_residues, control_residues)
+```
+
+The BIN-test is now expected to be significant.
+
+```{r fig.height=7}
+BIN_test(case_residues, control_residues)
+```
+
+As differences in coverage could manifest in differences in variant distributions this can be controlled for by providing coverage files. Here we will simulate a region with no coverage in cases (1-200) and a region of low coverage in controls (800-1000). 
+
+```{r}
+  case_coverage = rep(c(0, 1), c(200, 800))
+  control_coverage = rep(c(1, 0.8), c(800, 200))
+
+  case_probs = probs * case_coverage
+  control_probs = probs * control_coverage
+  
+  case_residues = sample(1:nresidues, 100, rep=T, case_probs)
+  control_residues = sample(1:nresidues, 100, rep=T, control_probs)
+  
+  BIN_test(case_residues, control_residues)
+ 
+```
+
+A coverage file detailing these issues should adjust for this coverage difference. To adjust for coverage the coverage file must contain two columns named: protein_position and over_10. The first is the residue index in the linear protein position. The second is the proportion of samples with at least 10X coverage. 
+
+Note: If your file contains coverage at a per base level (highly likely) it can be mapped to canonical ensembl transcripts and residues positions using ClusterBurden::genome_to_residue(). 
+
+```{r}
+  case_coverage = data.table(protein_position=1:nresidues, over_10=case_coverage)
+  control_coverage = data.table(protein_position=1:nresidues, over_10=control_coverage)
+  
+  BIN_test(case_residues, control_residues, case_coverage, control_coverage)
+```
+
+## Burden test and ClusterBurden
+
+The function ClusterBurden::burden_test() can be used which calculate the p-value for a Fisher's-exact test. Inputs to this function are the counts for each cohort (after filtering) and the sample sizes for each cohort. If coverage information is provided sample sizes for each cohort are adjusted by the proportion of samples with 10X coverage over the region of interest (i.e. protein coding region).
+
+To calculate the ClusterBurden p-value, the p-values from the BIN-test and the burden test are combined using Fisher's method in function ClusterBurden::combine_ps(). This is only possible as the BIN-test does not use include any information on the samples sizes and is therefore uncorrelated with the burden test under the null. If either p-value is zero then the output from Fisher's method is undefined therefore instead of returning NA, zero is returned, suggesting a p-value so low it is rounded to zero. 
+
+```{r}
+
+  binpval = BIN_test(case_residues, control_residues, case_coverage, control_coverage)
+  burdp = burden_test(n1 = 80, n2 = 40, ss1 = 1000, ss2 = 1000) # 2X excess in cases
+  
+  combine_ps(burdp, binpval)
+```
+

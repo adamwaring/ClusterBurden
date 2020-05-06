@@ -1,0 +1,85 @@
+---
+title: "Formatting real data: ClusterBurden"
+author: "Adam Waring"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Formatting real data: ClusterBurden}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=7
+)
+```
+
+
+# Format required for case-control data 
+
+As a minimum, the case-control data should be a data.table with the columns:
+
+* aff (where 1 = cases and 0 = controls)
+* symbol (the HGNC gene symbol)
+* protein_position (the variant residue index in the linear protein sequence)
+* ac (the allele count for that variant)
+
+However more columns are necessary to filter the data on variant consequence and frequency. This method is designed for missense variants so the dataset should only include this variant type. The defaults used here include inframe indels up to 3 residues in size in the definition of missense. To filter on frequency I recommended using a strict popmax filter at the threshold 0.1% (i.e. 0.0001). 
+
+## Annotating with GnomAD frequencies for frequency filtering 
+
+If the dataset is not already annotated with GnomAD frequencies it can be here with the function; annotate_with_gnomad_freqs(). The dataset must contain matching ensembl transcripts to the GnomAD datasets here. Either the columns chr, pos, ref, alt or txconsq must be available, where chr = chromosome name, pos = genome position, ref = the reference base(s) and alt = the alternative base(s), and txconsq is the transcript consequence in HGVSc format i.e. c.76A>T. 
+
+```{r}
+library(ClusterBurden)
+
+x = annotate_with_gnomad_freqs(dataset = data.table(symbol="MYH7", chr="14", pos=23882985, ref="G", alt="A"))
+print(x)
+
+x = annotate_with_gnomad_freqs(dataset = data.table(symbol="MYH7", txconsq="c.5704G>C"))
+print(x)
+```
+
+
+## Extracting protein position from HGVSp format
+
+If the protein position is not directly available but the protein consequence is in HGVSp e.g. p.R502W then the protein position can be extracted using regular expressions. 
+
+```{r}
+get_residue_position("p.R502W")
+
+x = data.table(pconsq = c("p.Leu1903Leu", "p.Lys1173_Ala1174delinsThr"))
+x[,protein_position := get_residue_position(pconsq)]
+x
+```
+
+
+## Inframes size
+
+Calculating an inframe indels size is possible using the ref and alt columns.
+
+```{r}
+x = data.table(ref = c("AGGATGG", "G"), alt = c("A", "GCACACA"))
+
+x[,n_res:=mapply(function(x, y) max(nchar(x)%/%3, nchar(y)%/%3), ref, alt)]
+x
+```
+
+# Formatting coverage 
+
+Coverage files need to be data.tables with the columns;
+
+* symbol (the HGNC gene symbol)
+* protein_position (the variant residue index in the linear protein sequence)
+* over_10 (the proportion of samples with at least 10X coverage over the residue - i.e. a mean across all bases)
+
+As most coverage files are supplied at the base level with genomic coordinates, I have developed a function here to convert this format to the format required; format_coverage(). This function requires only one argument, a data.table with columns: chr, pos and over_10.
+
+```{r}
+x = data.table(chr = "14", pos = 23882071:23882081, over_10=1)
+
+format_coverage(x)
+```
