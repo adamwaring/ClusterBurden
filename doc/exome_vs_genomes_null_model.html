@@ -12,7 +12,7 @@
 
 <meta name="author" content="Adam Waring" />
 
-<meta name="date" content="2020-05-06" />
+<meta name="date" content="2020-05-07" />
 
 <title>GnomAD exomes vs genomes: ClusterBurden ‘null’ model</title>
 
@@ -301,7 +301,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">GnomAD exomes vs genomes: ClusterBurden ‘null’ model</h1>
 <h4 class="author">Adam Waring</h4>
-<h4 class="date">2020-05-06</h4>
+<h4 class="date">2020-05-07</h4>
 
 
 
@@ -315,27 +315,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>Calculate BIN-test p-values with no coverage control</li>
 </ol>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(ClusterBurden)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="co">#&gt; Loading required package: data.table</span></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co">#&gt; Loading required package: ggplot2</span></a>
-<a class="sourceLine" id="cb1-4" title="4"></a>
-<a class="sourceLine" id="cb1-5" title="5">controls =<span class="st"> </span><span class="kw">collect_gnomad_controls</span>(<span class="dt">dataset=</span><span class="st">&quot;exome&quot;</span>)</a>
-<a class="sourceLine" id="cb1-6" title="6">cases =<span class="st"> </span><span class="kw">collect_gnomad_controls</span>(<span class="dt">dataset=</span><span class="st">&quot;genome&quot;</span>)</a>
-<a class="sourceLine" id="cb1-7" title="7">cases[,aff<span class="op">:</span><span class="er">=</span><span class="dv">1</span>]</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3">controls =<span class="st"> </span><span class="kw">collect_gnomad_controls</span>(<span class="dt">dataset=</span><span class="st">&quot;exome&quot;</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4">cases =<span class="st"> </span><span class="kw">collect_gnomad_controls</span>(<span class="dt">dataset=</span><span class="st">&quot;genome&quot;</span>)</a>
+<a class="sourceLine" id="cb1-5" title="5">cases[,aff<span class="op">:</span><span class="er">=</span><span class="dv">1</span>]</a>
+<a class="sourceLine" id="cb1-6" title="6"></a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="kw">attributes</span>(controls)<span class="op">$</span>provenance =<span class="st"> </span><span class="kw">attributes</span>(cases)<span class="op">$</span>provenance =<span class="st"> </span><span class="ot">NULL</span></a>
 <a class="sourceLine" id="cb1-8" title="8"></a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="kw">attributes</span>(controls)<span class="op">$</span>provenance =<span class="st"> </span><span class="kw">attributes</span>(cases)<span class="op">$</span>provenance =<span class="st"> </span><span class="ot">NULL</span></a>
-<a class="sourceLine" id="cb1-10" title="10"></a>
-<a class="sourceLine" id="cb1-11" title="11">binpval =<span class="st"> </span><span class="kw">BIN_test_WES</span>(cases, controls)</a>
-<a class="sourceLine" id="cb1-12" title="12"><span class="co">#&gt; Removed 137 genes with zero case variants</span></a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="co">#&gt; Removed 254 genes with zero controls variants</span></a>
-<a class="sourceLine" id="cb1-14" title="14"></a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="kw">head</span>(binpval)</a>
-<a class="sourceLine" id="cb1-16" title="16"><span class="co">#&gt;     symbol BIN.test_pvalue  pl_flag</span></a>
-<a class="sourceLine" id="cb1-17" title="17"><span class="co">#&gt; 1:    A1BG     0.031272860     pass</span></a>
-<a class="sourceLine" id="cb1-18" title="18"><span class="co">#&gt; 2:    A1CF     0.006621624     pass</span></a>
-<a class="sourceLine" id="cb1-19" title="19"><span class="co">#&gt; 3:     A2M     0.069470176 moderate</span></a>
-<a class="sourceLine" id="cb1-20" title="20"><span class="co">#&gt; 4:   A2ML1     0.111721383 moderate</span></a>
-<a class="sourceLine" id="cb1-21" title="21"><span class="co">#&gt; 5: A3GALT2     0.017452236     pass</span></a>
-<a class="sourceLine" id="cb1-22" title="22"><span class="co">#&gt; 6:  A4GALT     0.663690605     pass</span></a></code></pre></div>
+<a class="sourceLine" id="cb1-9" title="9">binpval =<span class="st"> </span><span class="kw">BIN_test_WES</span>(cases, controls)</a>
+<a class="sourceLine" id="cb1-10" title="10"><span class="co">#&gt; Removed 137 genes with zero case variants</span></a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="co">#&gt; Removed 254 genes with zero controls variants</span></a>
+<a class="sourceLine" id="cb1-12" title="12"></a>
+<a class="sourceLine" id="cb1-13" title="13"><span class="kw">head</span>(binpval)</a>
+<a class="sourceLine" id="cb1-14" title="14"><span class="co">#&gt;     symbol BIN.test_pvalue  pl_flag</span></a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="co">#&gt; 1:    A1BG     0.031272860     pass</span></a>
+<a class="sourceLine" id="cb1-16" title="16"><span class="co">#&gt; 2:    A1CF     0.006621624     pass</span></a>
+<a class="sourceLine" id="cb1-17" title="17"><span class="co">#&gt; 3:     A2M     0.069470176 moderate</span></a>
+<a class="sourceLine" id="cb1-18" title="18"><span class="co">#&gt; 4:   A2ML1     0.111721383 moderate</span></a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="co">#&gt; 5: A3GALT2     0.017452236     pass</span></a>
+<a class="sourceLine" id="cb1-20" title="20"><span class="co">#&gt; 6:  A4GALT     0.663690605     pass</span></a></code></pre></div>
 <div id="proportion-of-significant-results" class="section level2">
 <h2>Proportion of significant results</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># nominal significance </span></a>
