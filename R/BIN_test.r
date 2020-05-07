@@ -194,14 +194,14 @@ BIN_test = function(case_residues, control_residues, case_coverage=NULL, control
 
     case_coverage[,bin:=cut(protein_position, breaks, include.lowest = T)]
     case_weight = case_coverage[!is.na(bin),mean(over_10), by=bin]$V1
-    contig[1,] = contig[1,] / case_weight
+    contig[1,] = ifelse(contig[1,]==0 & case_weight < 0.9, 0.5, contig[1,]) / case_weight
 
   }
   if(!is.null(control_coverage)){
 
     control_coverage[,bin:=cut(protein_position, breaks, include.lowest = T)]
     control_weight = control_coverage[!is.na(bin),mean(over_10), by=bin]$V1
-    contig[2,] = contig[2,] / control_weight
+    contig[2,] = ifelse(contig[2,]==0 & control_weight < 0.9, 0.5, contig[2,]) / control_weight
 
   }
 
