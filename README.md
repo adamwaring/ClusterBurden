@@ -2,11 +2,12 @@
 
 To install in R: 
 
-if(!"devtools" %in% installed.packages()[,"Package"]){
-  install.packages("devtools")
-}
-library(devtools)
-install_github("adamwaring/ClusterBurden")
+> if(!"devtools" %in% installed.packages()[,"Package"]){
+>   install.packages("devtools")
+> }
+
+> library(devtools)
+> install_github("adamwaring/ClusterBurden")
 
 Due to some large variant and coverage files, download may be slow. if interest in specific functions, feel free to copy directly from the R/ folder in this gitHub repo. 
 
