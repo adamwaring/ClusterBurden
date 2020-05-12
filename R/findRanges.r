@@ -49,7 +49,9 @@ findRanges = function(x, output="dt"){
   if(output=="dt"){
     return(x)
   } else if(output=="str"){
-    x = paste(apply(x, 1, paste, collapse="-"), collapse=",")
+    x = paste(apply(x, 1, function(x){
+      if(x[1]==x[2]) x[1] else paste0(x[1], "-", x[2])
+    }), collapse=",")
     return(x)
   }
 
