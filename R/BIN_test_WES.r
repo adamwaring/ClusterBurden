@@ -156,7 +156,7 @@ BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NU
 
   data("nresidues")
   break_points = merge(break_points, nresidues, by="symbol", all.x=T)
-  break_points[,pl_flag:=ifelse(nresidues > 1000, "moderate", ifelse(nresidues > 2000, "high", ifelse(nresidues > 3000, "vhigh", "pass")))]
+  break_points[,pl_flag:=ifelse(nresidues > 3000, "vhigh", ifelse(nresidues > 2000, "high", ifelse(nresidues > 1000, "moderate", "pass")))]
 
 
   return_cols = c("symbol", "BIN.test_pvalue", "pl_flag")
