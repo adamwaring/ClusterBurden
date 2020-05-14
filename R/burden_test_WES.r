@@ -111,7 +111,7 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
 
 
   # count variants per genes
-  gene_counts = dataset[rep(1:.N, ceiling(ac^0.8)),.(ncases=sum(aff==1), ncontrols=sum(aff==0)), by=.(symbol)]
+  gene_counts = dataset[rep(1:.N, ac),.(ncases=sum(aff==1), ncontrols=sum(aff==0)), by=.(symbol)]
   gene_counts[ncases==0, ncases:=0.5]
   gene_counts[ncontrols==0, ncontrols:=0.5]
 

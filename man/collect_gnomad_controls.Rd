@@ -31,6 +31,9 @@ collect_gnomad_controls(
 
 \item{maxmaf}{maf threshold using for frequency filtering default is 0.0001 (i.e. 0.1%)}
 }
+\value{
+a data.table of GnomAD controls
+}
 \description{
 Automatically get controls for BIN-test and ClusterBurden
 GnomAD exomes or genomes v2 (missense only)

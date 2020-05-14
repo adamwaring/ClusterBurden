@@ -47,6 +47,51 @@ Calculate Fisher's-exact p-values across the whole-exome
 \details{
 Calculates a Fisher's-exact test with coverage control across an exome set. Yates continuity correction used for 0 counts. Residue positions with mean 10X coverage less than "cov_threshold" excluded from the analysis.
 }
+\examples{
+library(ClusterBurden)
+
+N = 10000 # dataset size
+PL = 1000 # protein length
+n_genes = 10
+ss = 10000 # sample size
+genes = paste0("gene", 1:n_genes) #gene names
+
+# example case dataset
+cases = data.table(aff=1,
+                   symbol = sample(genes, N, rep=T),
+                   protein_position = sample(PL, N, rep=T),
+                   ac = ceiling(rexp(N, 1.2)))
+
+# example control dataset
+controls = data.table(aff=0,
+                      symbol = sample(genes, N, rep=T),
+                      protein_position = sample(PL, N, rep=T),
+                      ac = ceiling(rexp(N, 1.2)))
+
+# provide cases and control sample sizes
+cases_ss = controls_ss = ss
+
+# p-values without coverage control
+pvals = burden_test_WES(cases, controls, cases_ss, controls_ss)
+
+# example coverage files
+case_coverage = data.table(symbol=rep(genes, each=PL),
+                           protein_position=rep(1:PL, n_genes),
+                           over_10=1-rexp(n_genes*PL, 50))
+
+control_coverage = data.table(symbol=rep(genes, each=PL),
+                              protein_position=rep(1:PL, n_genes),
+                              over_10=1-rexp(n_genes*PL, 50))
+
+# p-values with coverage control
+pvals = burden_test_WES(cases, controls, cases_ss, controls_ss, case_coverage, control_coverage)
+
+# example format for genes with different sample sizes
+cases_ss = controls_ss = data.table(symbol=genes, ss=c(rep(ss, 9), ss/2))
+
+# p-values when genes have different sample sizes
+pvals = burden_test_WES(cases, controls, cases_ss, controls_ss, case_coverage, control_coverage)
+}
 \author{
 Adam Waring - adam.waring@msdtc.ox.ac.uk
 }

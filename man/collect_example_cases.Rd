@@ -2,8 +2,7 @@
 % Please edit documentation in R/collect_example_cases.r
 \name{collect_example_cases}
 \alias{collect_example_cases}
-\title{Make example cases based on ClinVAR and gnomAD data
-(purely for demonstrative purposes)}
+\title{Make example cases based on ClinVAR and gnomAD data}
 \usage{
 collect_example_cases(
   matchcontrols,
@@ -27,9 +26,11 @@ collect_example_cases(
 
 \item{maxmaf}{maf threshold using for frequency filtering default is 0.0001 (i.e. 0.1%)}
 }
+\value{
+A data.table of example cases
+}
 \description{
 Make example cases based on ClinVAR and gnomAD data
-(purely for demonstrative purposes)
 }
 \details{
 This semi-synthetic data for example purposes. The resulting dataset is a composite of GnomAD gene variants and ClinVAR gene variants.
