@@ -18,11 +18,68 @@
 #'
 #' @details Calculates a Fisher's-exact test with coverage control across an exome set. Yates continuity correction used for 0 counts. Residue positions with mean 10X coverage less than "cov_threshold" excluded from the analysis.
 #' @export
-
+#' @examples
+#' library(ClusterBurden)
+#'
+#' N = 10000 # dataset size
+#' PL = 1000 # protein length
+#' n_genes = 10
+#' ss = 10000 # sample size
+#' genes = paste0("gene", 1:n_genes) #gene names
+#'
+#' # example case dataset
+#' cases = data.table(aff=1,
+#'                    symbol = sample(genes, N, rep=T),
+#'                    protein_position = sample(PL, N, rep=T),
+#'                    ac = ceiling(rexp(N, 1.2)))
+#'
+#' # example control dataset
+#' controls = data.table(aff=0,
+#'                       symbol = sample(genes, N, rep=T),
+#'                       protein_position = sample(PL, N, rep=T),
+#'                       ac = ceiling(rexp(N, 1.2)))
+#'
+#' # provide cases and control sample sizes
+#' cases_ss = controls_ss = ss
+#'
+#' # p-values without coverage control
+#' pvals = burden_test_WES(cases, controls, cases_ss, controls_ss)
+#'
+#' # example coverage files
+#' case_coverage = data.table(symbol=rep(genes, each=PL),
+#'                            protein_position=rep(1:PL, n_genes),
+#'                            over_10=1-rexp(n_genes*PL, 50))
+#'
+#' control_coverage = data.table(symbol=rep(genes, each=PL),
+#'                               protein_position=rep(1:PL, n_genes),
+#'                               over_10=1-rexp(n_genes*PL, 50))
+#'
+#' # p-values with coverage control
+#' pvals = burden_test_WES(cases, controls, cases_ss, controls_ss, case_coverage, control_coverage)
+#'
+#' # example format for genes with different sample sizes
+#' cases_ss = controls_ss = data.table(symbol=genes, ss=c(rep(ss, 9), ss/2))
+#'
+#' # p-values when genes have different sample sizes
+#' pvals = burden_test_WES(cases, controls, cases_ss, controls_ss, case_coverage, control_coverage)
 
 
 burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, case_coverage=NULL, control_coverage=NULL, cov_threshold=0.5, alternative = "greater", covstats=F, messages=T){
 
+  null1 = !is.null(case_coverage)
+  null2 = !is.null(control_coverage)
+
+  is1 = is.data.table(cases_ss)
+  is2 = is.data.table(controls_ss)
+
+  if(is1 & !setequal(colnames(cases_ss), c("symbol", "ss"))){
+    stop("If a data.table  is provided for 'cases_ss' it must have two columns: symbol, ss. Where symbol is the genename and effective sample size for each case gene.")
+
+  }
+  if(is2 & !setequal(colnames(controls_ss), c("symbol", "ss"))){
+    stop("If a data.table  is provided for 'controls_ss' it must have two columns: symbol, ss. Where symbol is the genename and effective sample size for each control gene.")
+
+  }
 
 
   # if autocases or autocontrols automatically supply case and control coverage
@@ -45,9 +102,6 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
     stop("dataset has zero rows.")
   }
 
-  null1 = !is.null(case_coverage)
-  null2 = !is.null(control_coverage)
-
 
   newdata = remove_uncovered_residues(dataset, case_coverage, control_coverage, cov_threshold, messages)
   dataset = newdata[[1]]
@@ -57,7 +111,7 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
 
 
   # count variants per genes
-  gene_counts = dataset[rep(1:.N, ceiling(ac^(2/5))),.(ncases=sum(aff==1), ncontrols=sum(aff==0)), by=.(symbol)]
+  gene_counts = dataset[rep(1:.N, ceiling(ac^0.8)),.(ncases=sum(aff==1), ncontrols=sum(aff==0)), by=.(symbol)]
   gene_counts[ncases==0, ncases:=0.5]
   gene_counts[ncontrols==0, ncontrols:=0.5]
 
@@ -76,8 +130,23 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
 
     } else {
 
-      case_ss_by_gene = case_coverage[,.(case_ss=round(mean(over_10) * case_ss)), by=symbol]
-      gene_counts = merge(gene_counts, case_ss_by_gene)
+      if(length(cases_ss) == 1){
+
+        case_ss_by_gene = case_coverage[,.(case_ss=round(mean(over_10) * cases_ss)), by=symbol]
+        gene_counts = merge(gene_counts, case_ss_by_gene)
+
+      } else {
+
+        mean_cov = case_coverage[,.(mean_cov=round(mean(over_10))), by=symbol]
+        mean_cov = merge(mean_cov, cases_ss, by="symbol")
+        adj_ss = mean_cov[,.(symbol, ss=mean_cov*ss)]
+
+        gene_counts = merge(gene_counts, adj_ss[,.(symbol, case_ss=ss)])
+        nna = gene_counts[,sum(is.na(case_ss))]
+        if(nna>0) message(paste0("Removed ", nna, " genes with no sample size given in 'cases_ss'"))
+        gene_counts = na.omit(gene_counts)
+
+      }
 
     }
 
@@ -114,8 +183,23 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
 
     } else {
 
-      control_ss_by_gene = control_coverage[,.(control_ss=round(mean(over_10) * control_ss)), by=symbol]
-      gene_counts = merge(gene_counts, control_ss_by_gene)
+      if(length(controls_ss) == 1){
+
+        control_ss_by_gene = control_coverage[,.(control_ss=round(mean(over_10) * controls_ss)), by=symbol]
+        gene_counts = merge(gene_counts, control_ss_by_gene)
+
+      } else {
+
+        mean_cov = control_coverage[,.(mean_cov=round(mean(over_10))), by=symbol]
+        mean_cov = merge(mean_cov, controls_ss, by="symbol")
+        adj_ss = mean_cov[,.(symbol, ss=mean_cov*ss)]
+
+        gene_counts = merge(gene_counts, adj_ss[,.(symbol, control_ss=ss)])
+        nna = gene_counts[,sum(is.na(control_ss))]
+        if(nna>0) message(paste0("Removed ", nna, " genes with no sample size given in 'controls_ss'"))
+        gene_counts = na.omit(gene_counts)
+
+      }
 
     }
 

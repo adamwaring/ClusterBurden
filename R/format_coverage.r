@@ -20,7 +20,7 @@ format_coverage = function(coverage){
   residue_mapped = merge(grmap_reduced, coverage, by.x=c("chr", "pos"), by.y = c("chrom", "pos"))
 
   setNames(residue_mapped[, .(mean(over_10)), by=.(gene, index)],
-           c("symbol", "index", "over_10"))
+           c("symbol", "protein_position", "over_10"))
 
 }
 

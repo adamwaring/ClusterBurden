@@ -102,7 +102,7 @@ BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NU
     setkey(case_coverage, symbol, start, end)
 
     break_points$case_weight = foverlaps(break_points, case_coverage)[,mean(over_10, na.rm=T), by=.(symbol, i.start)]$V1
-    break_points[,case_counts := case_counts/case_weight]
+    break_points[,case_counts := round(case_counts/case_weight)]
 
   } else break_points[,case_weight:=1]
 
@@ -113,7 +113,7 @@ BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NU
     setkey(control_coverage, symbol, start, end)
 
     break_points$control_weight = foverlaps(break_points, control_coverage)[,mean(over_10, na.rm=T), by=.(symbol, i.start)]$V1
-    break_points[,control_counts := control_counts/control_weight]
+    break_points[,control_counts := round(control_counts/control_weight)]
 
   } else break_points[,control_weight:=1]
 

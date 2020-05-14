@@ -65,7 +65,7 @@ remove_uncovered_residues = function(dataset, case_coverage, control_coverage, c
 
   }
 
-  if(messages & (null1 | null2)) message(paste0(N-nrow(dataset), " variants removed with no coverage or less than ",
+  if(messages & (null1 | null2) & N-nrow(dataset) > 0) message(paste0(N-nrow(dataset), " variants removed with no coverage or less than ",
                   cov_threshold, " 10X coverage in either case_coverage or control_coverage"))
 
   blacklist = NULL
