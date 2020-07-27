@@ -133,12 +133,12 @@ econtrols = X[dataset=="gnomad_e2"]
 gcontrols = X[dataset=="gnomad_g2"]
 
 econtrols_nonpass = econtrols[filter!="PASS"]
-econtrols_nonpass = econtrols_nonpass[,.(chr=chrom, pos, ref, alt, symbol, txconsq, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
-freq_cols = c("pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
+econtrols_nonpass = econtrols_nonpass[,.(chr=chrom, pos, ref, alt, symbol, txconsq, af_popmax=af_popmax_e2, strict_popmax, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
+freq_cols = c("af_popmax", "strict_popmax", "pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
 econtrols_nonpass[,(freq_cols):=lapply(.SD, signif, 3), .SDcols=freq_cols]
 
-econtrols = econtrols[filter=="PASS", .(chr=chrom, pos, ref, alt, ac_e2, txconsq, pconsq, protein_position, symbol, consequence, pci95_g2, pci90_g2, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
-freq_cols = c("pci95_g2", "pci90_g2", "pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
+econtrols = econtrols[filter=="PASS", .(chr=chrom, pos, ref, alt, ac_e2, txconsq, protein_position, symbol, consequence, af_popmax=af_popmax_e2, strict_popmax, pci95_g2, pci90_g2, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
+freq_cols = c("af_popmax", "strict_popmax", "pci95_g2", "pci90_g2", "pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
 econtrols[,(freq_cols):=lapply(.SD, signif, 3), .SDcols=freq_cols]
 
 save(econtrols, file="data/econtrols.RData", compress = "bzip2")
@@ -150,8 +150,8 @@ freq_cols = c("pci95_g2", "pci90_g2")
 gcontrols_nonpass[,(freq_cols):=lapply(.SD, signif, 3), .SDcols=freq_cols]
 
 
-gcontrols = gcontrols[filter=="PASS", .(chr=chrom, pos, ref, alt, ac_g2, txconsq, pconsq, protein_position, symbol, consequence, pci95_g2, pci90_g2, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
-freq_cols = c("pci95_g2", "pci90_g2", "pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
+gcontrols = gcontrols[filter=="PASS", .(chr=chrom, pos, ref, alt, ac_g2, txconsq, protein_position, symbol, consequence, pci95_g2, pci90_g2, af_popmax=af_popmax_e2, strict_popmax, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)]
+freq_cols = c("pci95_g2", "pci90_g2", "af_popmax", "strict_popmax", "pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict")
 gcontrols[,(freq_cols):=lapply(.SD, signif, 3), .SDcols=freq_cols]
 
 
@@ -162,10 +162,10 @@ save(gcontrols_nonpass, file="data/gcontrols_nonpass.RData", compress = "bzip2")
 # add documentation for new data
 # change anno gnomad function to load both files
 
-load("data/exome_cov.RData")
-exome_cov[,over_10:=signif(over_10, 3)]
-save(exome_cov, file="data/exome_cov.Rdata", compress = "bzip2")
-
-load("data/genome_cov.RData")
-genome_cov[,over_10:=signif(over_10, 3)]
-save(genome_cov, file="data/genome_cov.Rdata", compress = "bzip2")
+# load("data/exome_cov.RData")
+# exome_cov[,over_10:=signif(over_10, 3)]
+# save(exome_cov, file="data/exome_cov.Rdata", compress = "bzip2")
+#
+# load("data/genome_cov.RData")
+# genome_cov[,over_10:=signif(over_10, 3)]
+# save(genome_cov, file="data/genome_cov.Rdata", compress = "bzip2")

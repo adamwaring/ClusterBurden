@@ -34,7 +34,8 @@
 #'
 #' controls = collect_gnomad_controls(c("MYH7", "TNNI3"))
 
-collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_dataset_threshold=0, inframes=T, max_inframe_size=3, filtertype="pci95_strict", maxmaf=0.0001, messages=T){
+#genenames=NULL; dataset="exome"; switch_dataset_threshold=0; inframes=T; max_inframe_size=3; filtertype="pci95_strict"; maxmaf=0.0001; messages=T
+collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_dataset_threshold=0, inframes=T, max_inframe_size=3, filtertype="strict_popmax", maxmaf=0.0001, messages=T){
 
   data("x10_gnomad")
 
@@ -72,8 +73,10 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
 
   if(any(x10_gnomad$chosen == "e")){
 
-    data("econtrols")
-    econtrols = econtrols[af_e2 <= maxmaf]
+    #data("econtrols")
+    load("data/econtrols.RData")
+    econtrols[,ac:=ac_e2]
+    #econtrols = econtrols[pci90_global <= maxmaf]
     controls = rbind(controls, cbind(econtrols[symbol%in%x10_gnomad[chosen=="e", symbol]], group="e"))
 
     data("exome_cov")
@@ -83,8 +86,10 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
 
   if(any(x10_gnomad$chosen == "g")){
 
-    data("gcontrols")
-    gcontrols = gcontrols[af_g2 <= maxmaf]
+    #data("gcontrols")
+    load("data/gcontrols.RData")
+    gcontrols[,ac:=ac_g2]
+    #gcontrols = gcontrols[pci90_g2 <= maxmaf]
     controls = rbind(controls, cbind(gcontrols[symbol%in%x10_gnomad[chosen=="g", symbol]], group="g"), fill=T)
 
     data("genome_cov")
@@ -96,7 +101,7 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
   # filter variant data
   if(!inframes) max_inframe_size=0
 
-  controls = controls[controls[[filtertype]] < maxmaf & n_res <= max_inframe_size]
+  controls = controls[controls[[filtertype]] < maxmaf & nchar(ref)%/%3 <= max_inframe_size & nchar(alt)%/%3 <= max_inframe_size]
 
   if(messages & nrow(controls) == 0){
     message("No variants left after filtering")

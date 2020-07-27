@@ -28,12 +28,12 @@ annotate_with_gnomad_freqs = function(dataset){
 
   if(method == "chrpos"){
 
-    data2 = merge(dataset, econtrols[,.(chr=chrom, pos, ref, alt, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("chr", "pos", "ref", "alt"), all.x=T)
+    data2 = merge(dataset, econtrols[,.(chr=chrom, pos, ref, alt, af_popmax, strict_popmax, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("chr", "pos", "ref", "alt"), all.x=T)
     data3 = merge(data2, gcontrols[,.(chr=chrom, pos, ref, alt, pci95_g2, pci90_g2)], by = c("chr", "pos", "ref", "alt"), all.x=T)
 
   } else if(method == "txconsq"){
 
-    data2 = merge(dataset, econtrols[,.(txconsq, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("txconsq"), all.x=T)
+    data2 = merge(dataset, econtrols[,.(txconsq, af_popmax, strict_popmax, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("txconsq"), all.x=T)
     data3 = merge(data2, gcontrols[,.(txconsq, pci95_g2, pci90_g2)], by = c("txconsq"), all.x=T)
 
   }

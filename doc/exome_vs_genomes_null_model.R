@@ -6,7 +6,7 @@ knitr::opts_chunk$set(
 )
 
 ## -----------------------------------------------------------------------------
-#library(ClusterBurden)
+library(ClusterBurden)
 sapply(list.files("R/", full.names = T), function(x) tryCatch(source(x), error=function(e) NULL))
 
 controls = collect_gnomad_controls(dataset="exome")
