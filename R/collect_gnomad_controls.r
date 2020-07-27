@@ -73,8 +73,7 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
 
   if(any(x10_gnomad$chosen == "e")){
 
-    #data("econtrols")
-    load("data/econtrols.RData")
+    data("econtrols")
     econtrols[,ac:=ac_e2]
     #econtrols = econtrols[pci90_global <= maxmaf]
     controls = rbind(controls, cbind(econtrols[symbol%in%x10_gnomad[chosen=="e", symbol]], group="e"))
@@ -86,8 +85,7 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
 
   if(any(x10_gnomad$chosen == "g")){
 
-    #data("gcontrols")
-    load("data/gcontrols.RData")
+    data("gcontrols")
     gcontrols[,ac:=ac_g2]
     #gcontrols = gcontrols[pci90_g2 <= maxmaf]
     controls = rbind(controls, cbind(gcontrols[symbol%in%x10_gnomad[chosen=="g", symbol]], group="g"), fill=T)
