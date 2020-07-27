@@ -34,7 +34,7 @@
 #'
 #' controls = collect_gnomad_controls(c("MYH7", "TNNI3"))
 
-collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_dataset_threshold=0, inframes=T, max_inframe_size=3, filtertype="strict", maxmaf=0.0001, messages=T){
+collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_dataset_threshold=0, inframes=T, max_inframe_size=3, filtertype="pci95_strict", maxmaf=0.0001, messages=T){
 
   data("x10_gnomad")
 
@@ -73,7 +73,7 @@ collect_gnomad_controls = function(genenames=NULL, dataset="exome", switch_datas
   if(any(x10_gnomad$chosen == "e")){
 
     data("econtrols")
-    econtrols = econtrols[global <= maxmaf]
+    econtrols = econtrols[af_e2 <= maxmaf]
     controls = rbind(controls, cbind(econtrols[symbol%in%x10_gnomad[chosen=="e", symbol]], group="e"))
 
     data("exome_cov")

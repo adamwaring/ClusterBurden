@@ -17,7 +17,6 @@ annotate_with_gnomad_freqs = function(dataset){
     stop("Must provide columns (chr, pos, ref, alt) or columns (txconsq) i.e. HGVSc transcript consequence")
   }
 
-
   data("econtrols")
   data("econtrols_nonpass")
   data("gcontrols")
@@ -29,17 +28,17 @@ annotate_with_gnomad_freqs = function(dataset){
 
   if(method == "chrpos"){
 
-    data2 = merge(dataset, econtrols[,.(chr, pos, ref, alt, global, popmax, strict)], by = c("chr", "pos", "ref", "alt"), all.x=T)
-    data3 = merge(data2, gcontrols[,.(chr, pos, ref, alt, af_g2)], by = c("chr", "pos", "ref", "alt"), all.x=T)
+    data2 = merge(dataset, econtrols[,.(chr=chrom, pos, ref, alt, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("chr", "pos", "ref", "alt"), all.x=T)
+    data3 = merge(data2, gcontrols[,.(chr=chrom, pos, ref, alt, pci95_g2, pci90_g2)], by = c("chr", "pos", "ref", "alt"), all.x=T)
 
   } else if(method == "txconsq"){
 
-    data2 = merge(dataset, econtrols[,.(txconsq, global, popmax, strict)], by = c("txconsq"), all.x=T)
-    data3 = merge(data2, gcontrols[,.(txconsq, af_g2)], by = c("txconsq"), all.x=T)
+    data2 = merge(dataset, econtrols[,.(txconsq, pci95_global, pci90_global, pci95_popmax, pci95_strict, pci90_popmax, pci90_strict)], by = c("txconsq"), all.x=T)
+    data3 = merge(data2, gcontrols[,.(txconsq, pci95_g2, pci90_g2)], by = c("txconsq"), all.x=T)
 
   }
 
-  freqs = c("af_g2", "global", "popmax", "strict")
+  freqs = c("pci95_global", "pci90_global", "pci95_popmax", "pci95_strict", "pci90_popmax", "pci90_strict", "pci95_g2", "pci90_g2")
   data3[,(freqs):=lapply(.SD, function(x) ifelse(is.na(x), 0, x)), .SDcols = freqs]
 
   return(data3)

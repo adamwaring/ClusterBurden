@@ -29,8 +29,8 @@ knitr::opts_chunk$set(
 ```{r}
 library(ClusterBurden)
 
-controls = collect_gnomad_controls(dataset="exome")
-cases = collect_gnomad_controls(dataset="genome")
+controls = collect_gnomad_controls(dataset="exome", filtertype = "popmax")
+cases = collect_gnomad_controls(dataset="genome", filtertype = "popmax")
 cases[,aff:=1]
 
 attributes(controls)$provenance = attributes(cases)$provenance = NULL

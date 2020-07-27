@@ -19,7 +19,7 @@
 
 # adjust allele count need to document
 # added continuity correction - need to document this and also add to bintest single function
-BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NULL, cov_threshold=0.5, covstats=F, messages=T){
+BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NULL, cov_threshold=0.5, covstats=F, messages=T, ac_downweight=0.8){
 
 
   case_prov = attributes(cases)$provenance
@@ -72,7 +72,7 @@ BIN_test_WES = function(cases, controls, case_coverage=NULL, control_coverage=NU
   if(nrow(dataset) == 0){
     stop(paste0("Zero variants left after excluded for low coverage regions (threshold = ", cov_threshold, ")"))
   }
-  dataset = dataset[rep(1:.N, ceiling(ac^(0.8)))]
+  dataset = dataset[rep(1:.N, ceiling(ac^(ac_downweight)))]
 
   # params
   make_breaks = function(minpos, maxpos, n){

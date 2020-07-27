@@ -6,7 +6,8 @@ knitr::opts_chunk$set(
 )
 
 ## -----------------------------------------------------------------------------
-library(ClusterBurden)
+#library(ClusterBurden)
+sapply(list.files("R/", full.names = T), function(x) tryCatch(source(x), error=function(e) NULL))
 
 controls = collect_gnomad_controls(dataset="exome")
 cases = collect_gnomad_controls(dataset="genome")
@@ -21,10 +22,10 @@ head(binpval)
 
 
 ## -----------------------------------------------------------------------------
-# nominal significance 
+# nominal significance
 binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
 
-# Bonferonni significance 
+# Bonferonni significance
 binpval[,sum(BIN.test_pvalue < 0.05/.N)/.N]
 
 ## -----------------------------------------------------------------------------
@@ -48,10 +49,10 @@ binpval = BIN_test_WES(cases, controls)
 binpval
 
 ## -----------------------------------------------------------------------------
-# nominal significance 
+# nominal significance
 binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
 
-# Bonferonni significance 
+# Bonferonni significance
 binpval[,sum(BIN.test_pvalue < 0.05/.N, na.rm=T)/.N]
 
 # function to generate lambda inflation metric
@@ -66,10 +67,10 @@ manhattan(binpval, "bin-test", 10, SCALE=0.5)
 ## -----------------------------------------------------------------------------
 binpval = binpval[!grepl("high", cov_flag1) & !grepl("high", cov_flag2) & !grepl("high", pl_flag)]
 
-# nominal significance 
+# nominal significance
 binpval[,sum(BIN.test_pvalue < 0.05, na.rm=T)/.N]
 
-# Bonferonni significance 
+# Bonferonni significance
 binpval[,sum(BIN.test_pvalue < 0.05/.N, na.rm=T)/.N]
 
 # function to generate lambda inflation metric

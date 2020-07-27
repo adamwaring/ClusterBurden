@@ -224,6 +224,9 @@ burden_test_WES = function(cases, controls, cases_ss=NULL, controls_ss=NULL, cas
   gene_counts[,burden_pvalue:=mapply(function(n1, n2, ss1, ss2) burden_test(n1=n1, n2=n2, ss1=ss1, ss2=ss2, alternative=alternative),
                                      ncases, ncontrols, case_ss, control_ss)]
 
+  gene_counts[,odds_est:=mapply(function(n1, n2, ss1, ss2) burden_test(n1=n1, n2=n2, ss1=ss1, ss2=ss2, alternative=alternative, pval=F)$estimate,
+                                     ncases, ncontrols, case_ss, control_ss)]
+
 
   if(covstats){
 
